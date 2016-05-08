@@ -1,5 +1,6 @@
 package com.a2g.nd.popularmovies;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import org.json.JSONArray;
@@ -28,22 +30,56 @@ import java.util.ArrayList;
 public class MainActivityFragment extends Fragment {
 
     private MovieAdapter movieAdapter;
+    private ArrayList<Movie> movieArrayList;
+
 
     public MainActivityFragment() {
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
+        if (savedInstanceState==null || !savedInstanceState.containsKey("movielist")) {
+            movieArrayList = new ArrayList<Movie>();
+            new FetchMoviesTask().execute("popular","1");
+        }
+        else {
+            movieArrayList = savedInstanceState.getParcelableArrayList("movielist");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("movielist", movieArrayList);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        movieAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
+        if(movieAdapter == null) {
+            movieAdapter = new MovieAdapter(getActivity(), movieArrayList);
+        }
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         //Get reference to Gridview and attach adapter to it
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
         gridView.setAdapter(movieAdapter);
 
-        new FetchMoviesTask().execute("popular","1");
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Movie movieObject = movieAdapter.getItem(position);
+                Intent detailActivityIntent = new Intent(getContext(), DetailActivity.class)
+                        .putExtra("movie_object", movieObject);
+                startActivity(detailActivityIntent);
+            }
+        });
 
         return rootView;
     }
@@ -56,28 +92,34 @@ public class MainActivityFragment extends Fragment {
             // These are the names of the JSON objects that need to be extracted.
             final String MOVIE_ARRAY = "results";
             final String POSTER_PATH = "poster_path";
+            final String ORIG_TITLE = "original_title";
+            final String OVERVIEW = "overview";
+            final String VOTE_AVG = "vote_average";
+            final String REL_DATE = "release_date";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray movieArray = moviesJson.getJSONArray(MOVIE_ARRAY);
 
-            //Create a new movie object array
+            //Create movie object
             Movie[] resultMovies = new Movie[movieArray.length()];
 
             for (int i = 0; i < movieArray.length() ; i++) {
                 // Get the JSON movie object
                 JSONObject movieObject = movieArray.getJSONObject(i);
                 String  movieImage = movieObject.getString(POSTER_PATH);
+                String  movieTitle = movieObject.getString(ORIG_TITLE);
+                String  moviePlot = movieObject.getString(OVERVIEW);
+                String  movieRating = movieObject.getString(VOTE_AVG);
+                String  movieRelDate = movieObject.getString(REL_DATE);
 
                 //Save the movieImage into Movie object
-                resultMovies[i] = new Movie(movieImage);
+                resultMovies[i] = new Movie(movieImage, movieTitle, moviePlot, movieRating, movieRelDate);
             }
-
             return resultMovies;
         }
 
         @Override
         protected Movie[] doInBackground(String... params){
-
             // Verify size of params
             if(params.length == 0){
                 return null;
@@ -175,7 +217,10 @@ public class MainActivityFragment extends Fragment {
             //add data from server
             if (result != null) {
                 movieAdapter.clear();
-                movieAdapter.addAll(result);
+
+                for(Movie movieObject : result){
+                    movieArrayList.add(movieObject);
+                }
             }
         }
 
