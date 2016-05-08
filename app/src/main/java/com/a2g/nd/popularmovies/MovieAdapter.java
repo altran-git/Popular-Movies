@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 /**
@@ -23,16 +26,20 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
     public View getView(int position, View convertView, ViewGroup parent){
         // Gets the Movie object from the adapter at position
         Movie movie = getItem(position);
-        
+
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext())
                     .inflate(R.layout.img_item_movie, parent, false);
         }
 
-        ImageView moviePoster = (ImageView) convertView
+        ImageView imageView = (ImageView) convertView
                 .findViewById(R.id.img_item_poster_imageview);
 
-        moviePoster.setImageResource(movie.image);
+        //Setup the string path for the image
+        String imagePath = "http://image.tmdb.org/t/p/" + "w185" + movie.imagePath;
+
+        //Use Picasso libary to load image into imageView (http://square.github.io/picasso)
+        Picasso.with(getContext()).load(imagePath).into(imageView);
 
         return convertView;
     }

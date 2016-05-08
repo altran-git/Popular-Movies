@@ -4,10 +4,10 @@ package com.a2g.nd.popularmovies;
  * Created by ND on 5/6/2016.
  */
 public class Movie {
-    int image; //drawable reference id
+    String imagePath;
 
-    public Movie(int image)
+    public Movie(String imagePath)
     {
-        this.image = image;
+        this.imagePath = imagePath;
     }
 }
