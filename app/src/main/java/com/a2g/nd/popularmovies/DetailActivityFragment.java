@@ -42,9 +42,9 @@ public class DetailActivityFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.tv_detail_plot))
                     .setText(movieObject.overview);
             ((TextView) rootView.findViewById(R.id.tv_detail_rating))
-                    .setText(movieObject.voteAvg);
+                    .setText("Rating: " + movieObject.voteAvg);
             ((TextView) rootView.findViewById(R.id.tv_detail_relDate))
-                    .setText(movieObject.releaseDate);
+                    .setText("Released: " + movieObject.releaseDate);
         }
 
         return rootView;
