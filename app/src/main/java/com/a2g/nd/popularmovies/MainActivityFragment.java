@@ -51,7 +51,6 @@ public class MainActivityFragment extends Fragment {
 
         if (savedInstanceState==null || !savedInstanceState.containsKey("movielist")) {
             movieArrayList = new ArrayList<Movie>();
-            new FetchMoviesTask().execute("popular","1");
         }
         else {
             movieArrayList = savedInstanceState.getParcelableArrayList("movielist");
@@ -64,13 +63,34 @@ public class MainActivityFragment extends Fragment {
         inflater.inflate(R.menu.menu_mainfragment, menu);
 
         MenuItem item = menu.findItem(R.id.sort_spinner);
-        Spinner spinner = (Spinner) MenuItemCompat.getActionView(item);
+        Spinner sort_spinner = (Spinner) MenuItemCompat.getActionView(item);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
                 R.array.sort_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        spinner.setAdapter(adapter);
+        sort_spinner.setAdapter(adapter);
+
+        sort_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int position, long id) {
+                switch (position){
+                    case 0:
+                        movieAdapter.clear();
+                        new FetchMoviesTask().execute("popular","1");
+                        break;
+                    case 1:
+                        movieAdapter.clear();
+                        new FetchMoviesTask().execute("top_rated","1");
+                        break;
+                    default:
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
     }
 
     @Override
@@ -238,11 +258,10 @@ public class MainActivityFragment extends Fragment {
         protected void onPostExecute(Movie[] result) {
             //add data from server
             if (result != null) {
-                movieAdapter.clear();
-
                 for(Movie movieObject : result){
                     movieArrayList.add(movieObject);
                 }
+                movieAdapter.notifyDataSetChanged();
             }
         }
 
