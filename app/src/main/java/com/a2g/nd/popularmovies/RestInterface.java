@@ -17,6 +17,7 @@ public interface RestInterface {
 
     Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("http://api.themoviedb.org/3/")
+            .client(MainActivity.client)
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 }
