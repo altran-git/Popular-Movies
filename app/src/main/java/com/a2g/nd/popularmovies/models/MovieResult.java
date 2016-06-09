@@ -3,7 +3,7 @@ package com.a2g.nd.popularmovies.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Result {
+public class MovieResult {
     private String poster_path;
     private Boolean adult;
     private String overview;

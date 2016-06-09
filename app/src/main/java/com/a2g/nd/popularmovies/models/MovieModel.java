@@ -4,9 +4,9 @@ package com.a2g.nd.popularmovies.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Model {
+public class MovieModel {
     private Integer page;
-    private List<Result> results = new ArrayList<Result>();
+    private List<MovieResult> results = new ArrayList<MovieResult>();
     private Integer total_results;
     private Integer total_pages;
 
@@ -31,18 +31,18 @@ public class Model {
     /**
      *
      * @return
-     * The results
+     * The movieResults
      */
-    public List<Result> getResults() {
+    public List<MovieResult> getMovieResults() {
         return results;
     }
 
     /**
      *
      * @param results
-     * The results
+     * The movieResults
      */
-    public void setResults(List<Result> results) {
+    public void setMovieResults(List<MovieResult> results) {
         this.results = results;
     }
 

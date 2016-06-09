@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,7 +18,9 @@ import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.Spinner;
 
-import com.a2g.nd.popularmovies.models.Model;
+import com.a2g.nd.popularmovies.models.MovieModel;
+import com.a2g.nd.popularmovies.models.ReviewModel;
+import com.a2g.nd.popularmovies.models.VideoModel;
 
 import java.util.ArrayList;
 
@@ -139,28 +142,28 @@ public class MainActivityFragment extends Fragment {
     }
 
     public void getMovieData(String sortBy){
-        //Log.d(LOG_TAG, "JSON getMovieData");
+        Log.d(LOG_TAG, "JSON getMovieData");
 
         RestInterface service = RestInterface.retrofit.create(RestInterface.class);
 
-        Call<Model> call = service.getPopularMovies(sortBy, BuildConfig.THE_MOVIE_DB_API_KEY);
+        Call<MovieModel> call = service.getPopularMovies(sortBy, BuildConfig.THE_MOVIE_DB_API_KEY);
 
-        call.enqueue(new Callback<Model>() {
+        call.enqueue(new Callback<MovieModel>() {
             @Override
-            public void onResponse(Call<Model> call, Response<Model> response) {
+            public void onResponse(Call<MovieModel> call, Response<MovieModel> response) {
                 try {
-                    int pageSize = response.body().getResults().size();
+                    int pageSize = response.body().getMovieResults().size();
 
                     //Create movie object
                     Movie[] resultMovies = new Movie[pageSize];
 
                     for (int i = 0; i < pageSize ; i++) {
                         // Get the JSON movie objects
-                        String  movieImage = response.body().getResults().get(i).getPoster_path();
-                        String  movieTitle = response.body().getResults().get(i).getOriginal_title();
-                        String  moviePlot = response.body().getResults().get(i).getOverview();
-                        String  movieRating = response.body().getResults().get(i).getVote_average().toString();
-                        String  movieRelDate = response.body().getResults().get(i).getRelease_date();
+                        String  movieImage = response.body().getMovieResults().get(i).getPoster_path();
+                        String  movieTitle = response.body().getMovieResults().get(i).getOriginal_title();
+                        String  moviePlot = response.body().getMovieResults().get(i).getOverview();
+                        String  movieRating = response.body().getMovieResults().get(i).getVote_average().toString();
+                        String  movieRelDate = response.body().getMovieResults().get(i).getRelease_date();
 
                         //Save the movieImage into Movie object
                         resultMovies[i] = new Movie(movieImage, movieTitle, moviePlot, movieRating, movieRelDate);
@@ -180,175 +183,57 @@ public class MainActivityFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<Model> call, Throwable t) {
+            public void onFailure(Call<MovieModel> call, Throwable t) {
 
             }
         });
     }
 
-//    // Append more data into the adapter
-//    public void customLoadMoreDataFromApi(int offset) {
-//        // This method probably sends out a network request and appends new data items to your adapter.
-//        // Use the offset value and add it as a parameter to your API request to retrieve paginated data.
-//        // Deserialize API response and then construct new objects to append to the adapter
-//
-//        //Read the shared preference key for sorting
-//        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-//        String sort_by = sharedPref.getString(getString(R.string.sort_by_key), getString(R.string.sort_by_default));
-//
-//        //Log.d("SCROLL", "Sort By ---" + sort_by);
-//        new FetchMoviesTask().execute(sort_by, String.valueOf(offset));
-//    }
+    public void getVideoData(String movieId){
+        //Log.d(LOG_TAG, "JSON getVideoData");
 
-//    public class FetchMoviesTask extends AsyncTask<String,Void,Movie[]> {
-//
-//        private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
-//
-//        private Movie [] getMovieData(String moviesJsonStr) throws JSONException {
-//            // These are the names of the JSON objects that need to be extracted.
-//            final String MOVIE_ARRAY = "results";
-//            final String POSTER_PATH = "poster_path";
-//            final String ORIG_TITLE = "original_title";
-//            final String OVERVIEW = "overview";
-//            final String VOTE_AVG = "vote_average";
-//            final String REL_DATE = "release_date";
-//            final String TOTAL_PAGES = "total_pages";
-//
-//            JSONObject moviesJson = new JSONObject(moviesJsonStr);
-//            JSONArray movieArray = moviesJson.getJSONArray(MOVIE_ARRAY);
-//
-//            int total_pages = moviesJson.getInt(TOTAL_PAGES);
-//
-//            //write total pages to a shared preference key
-//            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-//            SharedPreferences.Editor editor = sharedPref.edit();
-//            editor.putInt(getString(R.string.total_pages_key), total_pages);
-//            editor.commit();
-//
-//            //Create movie object
-//            Movie[] resultMovies = new Movie[movieArray.length()];
-//
-//            for (int i = 0; i < movieArray.length() ; i++) {
-//                // Get the JSON movie objects
-//                JSONObject movieObject = movieArray.getJSONObject(i);
-//                String  movieImage = movieObject.getString(POSTER_PATH);
-//                String  movieTitle = movieObject.getString(ORIG_TITLE);
-//                String  moviePlot = movieObject.getString(OVERVIEW);
-//                String  movieRating = movieObject.getString(VOTE_AVG);
-//                String  movieRelDate = movieObject.getString(REL_DATE);
-//
-//                //Save the movieImage into Movie object
-//                resultMovies[i] = new Movie(movieImage, movieTitle, moviePlot, movieRating, movieRelDate);
-//            }
-//            return resultMovies;
-//        }
-//
-//        @Override
-//        protected Movie[] doInBackground(String... params){
-//            // Verify size of params
-//            if(params.length == 0){
-//                return null;
-//            }
-//
-//            // These two need to be declared outside the try/catch
-//            // so that they can be closed in the finally block.
-//            HttpURLConnection urlConnection = null;
-//            BufferedReader reader = null;
-//
-//            // Will contain the raw JSON response as a string.
-//            String moviesJsonStr = null;
-//
-//            try{
-//                // Construct the URL for MovieDB query
-//                // Possible parameters are available at themoviedb API page, at
-//                // http://docs.themoviedb.apiary.io/
-//                final String MOVIE_BASE_URL =
-//                        "http://api.themoviedb.org/3/movie/" + params[0] + "?";
-//
-//                final String API_ID_PARAM = "api_key";
-//                final String PAGE_PARAM = "page";
-//
-//                Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
-//                        .appendQueryParameter(API_ID_PARAM, BuildConfig.THE_MOVIE_DB_API_KEY)
-//                        .appendQueryParameter(PAGE_PARAM, params[1])
-//                        .build();
-//
-//                URL url = new URL(builtUri.toString());
-//
-//                //Log.v(LOG_TAG, "Built URI " + builtUri.toString());
-//
-//                // Create the request to MovieDB, and open the connection
-//                urlConnection = (HttpURLConnection) url.openConnection();
-//                urlConnection.setRequestMethod("GET");
-//                urlConnection.connect();
-//
-//                // Read the input stream into a String
-//                InputStream inputStream = urlConnection.getInputStream();
-//                StringBuffer buffer = new StringBuffer();
-//                if (inputStream == null) {
-//                    // Nothing to do.
-//                    return null;
-//                }
-//                reader = new BufferedReader(new InputStreamReader(inputStream));
-//
-//                String line;
-//                while ((line = reader.readLine()) != null) {
-//                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-//                    // But it does make debugging a *lot* easier if you print out the completed
-//                    // buffer for debugging.
-//                    buffer.append(line + "\n");
-//                }
-//
-//                if (buffer.length() == 0) {
-//                    // Stream was empty.  No point in parsing.
-//                    return null;
-//                }
-//
-//                moviesJsonStr = buffer.toString();
-//
-//                //Log.v(LOG_TAG, "Movies JSON String: " + moviesJsonStr);
-//
-//            } catch (IOException e) {
-//                Log.e(LOG_TAG, "Error ", e);
-//                // If the code didn't successfully get the movie data, there's no point in attempting
-//                // to parse it.
-//                return null;
-//            } finally {
-//                if (urlConnection != null) {
-//                    urlConnection.disconnect();
-//                }
-//                if (reader != null) {
-//                    try {
-//                        reader.close();
-//                    } catch (final IOException e) {
-//                        Log.e(LOG_TAG, "Error closing stream", e);
-//                    }
-//                }
-//            }
-//
-//            try{
-//                return getMovieData(moviesJsonStr);
-//            } catch(JSONException e){
-//                Log.e(LOG_TAG, e.getMessage(), e);
-//                e.printStackTrace();
-//            }
-//
-//            //will only return null if there was an error getting or parsing the moviedb.
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(Movie[] result) {
-//            //Log.d(LOG_TAG, "onPost");
-//
-//            //add data from server
-//            if (result != null) {
-//                for(Movie movieObject : result){
-//                    movieArrayList.add(movieObject);
-//                }
-//                movieAdapter.notifyDataSetChanged();
-//            }
-//        }
-//
-//    }
+        RestInterface service = RestInterface.retrofit.create(RestInterface.class);
+
+        Call<VideoModel> call = service.getMovieTrailers(movieId, BuildConfig.THE_MOVIE_DB_API_KEY);
+
+        call.enqueue(new Callback<VideoModel>() {
+            @Override
+            public void onResponse(Call<VideoModel> call, Response<VideoModel> response) {
+                try {
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VideoModel> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void getReviewData(String movieId){
+        //Log.d(LOG_TAG, "JSON getReviewData");
+
+        RestInterface service = RestInterface.retrofit.create(RestInterface.class);
+
+        Call<ReviewModel> call = service.getMovieReviews(movieId, BuildConfig.THE_MOVIE_DB_API_KEY);
+
+        call.enqueue(new Callback<ReviewModel>() {
+            @Override
+            public void onResponse(Call<ReviewModel> call, Response<ReviewModel> response) {
+                try {
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReviewModel> call, Throwable t) {
+
+            }
+        });
+    }
 }
