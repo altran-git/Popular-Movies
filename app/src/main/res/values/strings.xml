@@ -4,7 +4,6 @@
     <string name="action_sortby">SORT BY</string>
     <string name="sort_most_popular">Most Popular</string>
     <string name="sort_top_rated">Top Rated</string>
-    <string name="total_pages_key">pages</string>
     <string name="sort_by_key">sortby</string>
     <string name="sort_by_default">popular</string>
 </resources>
