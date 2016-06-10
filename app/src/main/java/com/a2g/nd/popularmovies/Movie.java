@@ -12,14 +12,16 @@ public class Movie implements Parcelable{
     String overview;
     String voteAvg;
     String releaseDate;
+    int id;
 
-    public Movie(String imagePath, String origTitle, String overview, String voteAvg, String releaseDate)
+    public Movie(String imagePath, String origTitle, String overview, String voteAvg, String releaseDate, int id)
     {
         this.imagePath = imagePath;
         this.origTitle = origTitle;
         this.overview = overview;
         this.voteAvg = voteAvg;
         this.releaseDate = releaseDate;
+        this.id = id;
     }
 
     private Movie(Parcel in){
@@ -28,6 +30,7 @@ public class Movie implements Parcelable{
         overview = in.readString();
         voteAvg = in.readString();
         releaseDate = in.readString();
+        id = in.readInt();
     }
 
     @Override
@@ -42,6 +45,7 @@ public class Movie implements Parcelable{
         parcel.writeString(overview);
         parcel.writeString(voteAvg);
         parcel.writeString(releaseDate);
+        parcel.writeInt(id);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {

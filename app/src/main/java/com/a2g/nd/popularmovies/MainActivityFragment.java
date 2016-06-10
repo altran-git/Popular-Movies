@@ -19,8 +19,6 @@ import android.widget.GridView;
 import android.widget.Spinner;
 
 import com.a2g.nd.popularmovies.models.MovieModel;
-import com.a2g.nd.popularmovies.models.ReviewModel;
-import com.a2g.nd.popularmovies.models.VideoModel;
 
 import java.util.ArrayList;
 
@@ -164,9 +162,10 @@ public class MainActivityFragment extends Fragment {
                         String  moviePlot = response.body().getMovieResults().get(i).getOverview();
                         String  movieRating = response.body().getMovieResults().get(i).getVote_average().toString();
                         String  movieRelDate = response.body().getMovieResults().get(i).getRelease_date();
+                        int movieId = response.body().getMovieResults().get(i).getId();
 
                         //Save the movieImage into Movie object
-                        resultMovies[i] = new Movie(movieImage, movieTitle, moviePlot, movieRating, movieRelDate);
+                        resultMovies[i] = new Movie(movieImage, movieTitle, moviePlot, movieRating, movieRelDate, movieId);
                     }
 
                     //add data from server
@@ -184,54 +183,6 @@ public class MainActivityFragment extends Fragment {
 
             @Override
             public void onFailure(Call<MovieModel> call, Throwable t) {
-
-            }
-        });
-    }
-
-    public void getVideoData(String movieId){
-        //Log.d(LOG_TAG, "JSON getVideoData");
-
-        RestInterface service = RestInterface.retrofit.create(RestInterface.class);
-
-        Call<VideoModel> call = service.getMovieTrailers(movieId, BuildConfig.THE_MOVIE_DB_API_KEY);
-
-        call.enqueue(new Callback<VideoModel>() {
-            @Override
-            public void onResponse(Call<VideoModel> call, Response<VideoModel> response) {
-                try {
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<VideoModel> call, Throwable t) {
-
-            }
-        });
-    }
-
-    public void getReviewData(String movieId){
-        //Log.d(LOG_TAG, "JSON getReviewData");
-
-        RestInterface service = RestInterface.retrofit.create(RestInterface.class);
-
-        Call<ReviewModel> call = service.getMovieReviews(movieId, BuildConfig.THE_MOVIE_DB_API_KEY);
-
-        call.enqueue(new Callback<ReviewModel>() {
-            @Override
-            public void onResponse(Call<ReviewModel> call, Response<ReviewModel> response) {
-                try {
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ReviewModel> call, Throwable t) {
 
             }
         });
