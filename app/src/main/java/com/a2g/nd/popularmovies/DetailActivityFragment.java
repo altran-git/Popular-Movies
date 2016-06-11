@@ -11,10 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.a2g.nd.popularmovies.models.ReviewModel;
+import com.a2g.nd.popularmovies.models.SimpleDividerItemDecoration;
 import com.a2g.nd.popularmovies.models.VideoModel;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,8 +26,8 @@ public class DetailActivityFragment extends Fragment {
     private static final String LOG_TAG = DetailActivityFragment.class.getSimpleName();
 
     private Movie movieObject;
-    private List<String> trailerList;
-    private List<String> reviewList;
+    //private List<String> trailerList = new ArrayList<String>();;
+    //private List<String> reviewList = new ArrayList<String>();;
 
     private RecyclerView recyclerView;
     private MovieDetailAdapter movieDetailAdapter;
@@ -42,29 +40,27 @@ public class DetailActivityFragment extends Fragment {
         Intent intent = getActivity().getIntent();
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
+        //Setup the recycler view
         recyclerView = (RecyclerView) rootView.findViewById(R.id.movies_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         if (intent != null && intent.hasExtra("movie_object")) {
             movieObject = intent.getParcelableExtra("movie_object");
 
-//            trailerList = new ArrayList<String>();
-//            trailerList.add(0, "testvideo");
-//            reviewList = new ArrayList<String>();
-//            reviewList.add(0, "testreview");
-            movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject, trailerList, reviewList);
+            //Attach adapter
+            movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject);
+            recyclerView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
             recyclerView.setAdapter(movieDetailAdapter);
 
+            //Get Trailer and Reviews
             getVideoData(Integer.toString(movieObject.id));
             getReviewData(Integer.toString(movieObject.id));
-
-            //movieDetailAdapter.setTrailerCount(1);
-
         }
 
         return rootView;
     }
 
+    //Retrofit Asynch call to retrieve Movie Trailers
     public void getVideoData(String movieId){
         Log.d(LOG_TAG, "JSON getVideoData");
 
@@ -78,11 +74,12 @@ public class DetailActivityFragment extends Fragment {
                 try {
                     int trailerCount = response.body().getVideoResults().size();
 
-                    movieDetailAdapter.setTrailerCount(trailerCount);
-
-                    trailerList = new ArrayList<String>();
                     for(int i=0; i<trailerCount; i++){
-                        trailerList.add(i, response.body().getVideoResults().get(i).getKey());
+                        movieObject.trailers.add(i, response.body().getVideoResults().get(i).getKey());
+                    }
+
+                    if(trailerCount != 0) {
+                        movieDetailAdapter.notifyDataSetChanged();
                     }
 
                 } catch (Exception e) {
@@ -97,6 +94,7 @@ public class DetailActivityFragment extends Fragment {
         });
     }
 
+    //Retrofit Asynch call to retrieve Movie Reviews
     public void getReviewData(String movieId){
         Log.d(LOG_TAG, "JSON getReviewData");
 
@@ -109,10 +107,17 @@ public class DetailActivityFragment extends Fragment {
             public void onResponse(Call<ReviewModel> call, Response<ReviewModel> response) {
                 try {
                     int reviewCount = response.body().getReviewResults().size();
-                    reviewList = new ArrayList<String>();
+
                     for(int i=0; i<reviewCount; i++){
-                        reviewList.add(i, response.body().getReviewResults().get(i).getContent());
+                        movieObject.reviews.add(i, response.body().getReviewResults().get(i).getContent());
+                        movieObject.reviewers.add(i, response.body().getReviewResults().get(i).getAuthor());
                     }
+
+                    if(reviewCount != 0) {
+                        movieDetailAdapter.notifyDataSetChanged();
+                    }
+
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

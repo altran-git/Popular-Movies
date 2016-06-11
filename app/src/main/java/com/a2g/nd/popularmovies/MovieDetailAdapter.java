@@ -10,26 +10,22 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.List;
-
 public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private final int VIEW_TYPE_DETAILS = 0;
     private final int VIEW_TYPE_TRAILERS = 1;
     private final int VIEW_TYPE_REVIEWS = 2;
 
-    private int trailerCount = 0;
-
     private Movie movieObject;
-    private List<String> trailerList;
-    private List<String> reviewList;
+    //private List<String> trailerList;
+    //private List<String> reviewList;
     Context context;
 
-    public MovieDetailAdapter(Context context, Movie movieObject, List<String> trailerList, List<String> reviewList) {
+    public MovieDetailAdapter(Context context, Movie movieObject) {
         this.context = context;
         this.movieObject = movieObject;
-        this.trailerList = trailerList;
-        this.reviewList = reviewList;
+        //this.trailerList = trailerList;
+        //this.reviewList = reviewList;
     }
 
     class MovieViewHolder extends RecyclerView.ViewHolder{
@@ -48,32 +44,60 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             ratingView = (TextView) itemView.findViewById(R.id.tv_detail_rating);
             dateView = (TextView) itemView.findViewById(R.id.tv_detail_relDate);
         }
+
+        public void bind() {
+            //Setup the string path for the image
+            String imagePath = "http://image.tmdb.org/t/p/" + "w342" + movieObject.imagePath;
+
+            //Use Picasso libary to load image into imageView (http://square.github.io/picasso)
+            Picasso.with(context).load(imagePath).into(imageView);
+
+            titleView.setText(movieObject.origTitle);
+            plotView.setText(movieObject.overview);
+            ratingView.setText("Rating: " + movieObject.voteAvg);
+            dateView.setText("Released: " + movieObject.releaseDate);
+        }
     }
 
     class VideoViewHolder extends RecyclerView.ViewHolder{
+        public final TextView titleView;
         public final ImageView iconView;
         public final TextView textView;
 
         public VideoViewHolder(View itemView) {
             super(itemView);
 
+            titleView = (TextView) itemView.findViewById(R.id.tv_section_title_trailer);
             iconView = (ImageView) itemView.findViewById(R.id.iv_detail_icon);
             textView = (TextView) itemView.findViewById(R.id.tv_detail_trailer);
+        }
+
+        public void bind(int position){
+            iconView.setImageResource(R.drawable.ic_play_circle);
+            textView.setText("Trailer " + position);
+            titleView.setText("Trailers:");
+            titleView.setVisibility(position == 1 && movieObject.trailers.size() != 0 ? View.VISIBLE : View.GONE);
         }
     }
 
     class ReviewViewHolder extends RecyclerView.ViewHolder{
+        public final TextView titleView;
         public final TextView textView;
+        public final TextView reviewerView;
 
         public ReviewViewHolder(View itemView) {
             super(itemView);
-
+            titleView = (TextView) itemView.findViewById(R.id.tv_section_title_review);
+            reviewerView = (TextView) itemView.findViewById(R.id.tv_detail_reviewer);
             textView = (TextView) itemView.findViewById(R.id.tv_detail_review);
         }
-    }
 
-    public void setTrailerCount(int trailerCount){
-        this.trailerCount = trailerCount;
+        public void bind(int position) {
+            reviewerView.setText(movieObject.reviewers.get(position-movieObject.trailers.size()-1));
+            textView.setText(movieObject.reviews.get(position-movieObject.trailers.size()-1));
+            titleView.setText("Reviews:");
+            titleView.setVisibility(position == 1 + movieObject.trailers.size() && movieObject.reviews.size() != 0 ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override
@@ -81,7 +105,7 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if(position == 0){
             return VIEW_TYPE_DETAILS;
         }
-        else if(position != 0 && position <= trailerCount) {
+        else if(position != 0 && position <= movieObject.trailers.size()) {
             return VIEW_TYPE_TRAILERS;
         }
         else {
@@ -113,34 +137,22 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_DETAILS:
                 MovieViewHolder movieViewHolder = (MovieViewHolder) holder;
-
-                //Setup the string path for the image
-                String imagePath = "http://image.tmdb.org/t/p/" + "w500" + movieObject.imagePath;
-
-                //Use Picasso libary to load image into imageView (http://square.github.io/picasso)
-                Picasso.with(context).load(imagePath).into(movieViewHolder.imageView);
-
-                movieViewHolder.titleView.setText(movieObject.origTitle);
-                movieViewHolder.plotView.setText(movieObject.overview);
-                movieViewHolder.ratingView.setText("Rating: " + movieObject.voteAvg);
-                movieViewHolder.dateView.setText("Released: " + movieObject.releaseDate);
+                movieViewHolder.bind();
                 break;
             case VIEW_TYPE_TRAILERS:
                 VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
+                videoViewHolder.bind(position);
 
-                videoViewHolder.iconView.setImageResource(R.drawable.ic_play_circle);
-                videoViewHolder.textView.setText(trailerList.get(position-trailerCount));
                 break;
             case VIEW_TYPE_REVIEWS:
                 ReviewViewHolder reviewViewHolder = (ReviewViewHolder) holder;
-
-                reviewViewHolder.textView.setText(reviewList.get(position-trailerCount-1));
+                reviewViewHolder.bind(position);
         }
 
     }
 
     @Override
     public int getItemCount() {
-        return (1 + trailerList.size() + reviewList.size());
+        return (1 + movieObject.trailers.size() + movieObject.reviews.size());
     }
 }
