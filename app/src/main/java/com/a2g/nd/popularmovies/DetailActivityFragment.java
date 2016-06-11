@@ -72,14 +72,17 @@ public class DetailActivityFragment extends Fragment {
             @Override
             public void onResponse(Call<VideoModel> call, Response<VideoModel> response) {
                 try {
-                    int trailerCount = response.body().getVideoResults().size();
 
-                    for(int i=0; i<trailerCount; i++){
-                        movieObject.trailers.add(i, response.body().getVideoResults().get(i).getKey());
-                    }
+                    if(response.isSuccessful()) {
+                        int trailerCount = response.body().getVideoResults().size();
 
-                    if(trailerCount != 0) {
-                        movieDetailAdapter.notifyDataSetChanged();
+                        for (int i = 0; i < trailerCount; i++) {
+                            movieObject.trailers.add(i, response.body().getVideoResults().get(i).getKey());
+                        }
+
+                        if (trailerCount != 0) {
+                            movieDetailAdapter.notifyDataSetChanged();
+                        }
                     }
 
                 } catch (Exception e) {
@@ -106,17 +109,19 @@ public class DetailActivityFragment extends Fragment {
             @Override
             public void onResponse(Call<ReviewModel> call, Response<ReviewModel> response) {
                 try {
-                    int reviewCount = response.body().getReviewResults().size();
 
-                    for(int i=0; i<reviewCount; i++){
-                        movieObject.reviews.add(i, response.body().getReviewResults().get(i).getContent());
-                        movieObject.reviewers.add(i, response.body().getReviewResults().get(i).getAuthor());
+                    if(response.isSuccessful()) {
+                        int reviewCount = response.body().getReviewResults().size();
+
+                        for (int i = 0; i < reviewCount; i++) {
+                            movieObject.reviews.add(i, response.body().getReviewResults().get(i).getContent());
+                            movieObject.reviewers.add(i, response.body().getReviewResults().get(i).getAuthor());
+                        }
+
+                        if (reviewCount != 0) {
+                            movieDetailAdapter.notifyDataSetChanged();
+                        }
                     }
-
-                    if(reviewCount != 0) {
-                        movieDetailAdapter.notifyDataSetChanged();
-                    }
-
 
                 } catch (Exception e) {
                     e.printStackTrace();

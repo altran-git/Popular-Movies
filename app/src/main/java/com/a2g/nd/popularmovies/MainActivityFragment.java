@@ -150,30 +150,32 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onResponse(Call<MovieModel> call, Response<MovieModel> response) {
                 try {
-                    int pageSize = response.body().getMovieResults().size();
+                    if(response.isSuccessful()) {
+                        int pageSize = response.body().getMovieResults().size();
 
-                    //Create movie object
-                    Movie[] resultMovies = new Movie[pageSize];
+                        //Create movie object
+                        Movie[] resultMovies = new Movie[pageSize];
 
-                    for (int i = 0; i < pageSize ; i++) {
-                        // Get the JSON movie objects
-                        String  movieImage = response.body().getMovieResults().get(i).getPoster_path();
-                        String  movieTitle = response.body().getMovieResults().get(i).getOriginal_title();
-                        String  moviePlot = response.body().getMovieResults().get(i).getOverview();
-                        String  movieRating = response.body().getMovieResults().get(i).getVote_average().toString();
-                        String  movieRelDate = response.body().getMovieResults().get(i).getRelease_date();
-                        int movieId = response.body().getMovieResults().get(i).getId();
+                        for (int i = 0; i < pageSize; i++) {
+                            // Get the JSON movie objects
+                            String movieImage = response.body().getMovieResults().get(i).getPoster_path();
+                            String movieTitle = response.body().getMovieResults().get(i).getOriginal_title();
+                            String moviePlot = response.body().getMovieResults().get(i).getOverview();
+                            String movieRating = response.body().getMovieResults().get(i).getVote_average().toString();
+                            String movieRelDate = response.body().getMovieResults().get(i).getRelease_date();
+                            int movieId = response.body().getMovieResults().get(i).getId();
 
-                        //Save the movieImage into Movie object
-                        resultMovies[i] = new Movie(movieImage, movieTitle, moviePlot, movieRating, movieRelDate, movieId);
-                    }
-
-                    //add data from server
-                    if (resultMovies != null) {
-                        for(Movie movieObject : resultMovies){
-                            movieArrayList.add(movieObject);
+                            //Save the movieImage into Movie object
+                            resultMovies[i] = new Movie(movieImage, movieTitle, moviePlot, movieRating, movieRelDate, movieId);
                         }
-                        movieAdapter.notifyDataSetChanged();
+
+                        //add data from server
+                        if (resultMovies != null) {
+                            for (Movie movieObject : resultMovies) {
+                                movieArrayList.add(movieObject);
+                            }
+                            movieAdapter.notifyDataSetChanged();
+                        }
                     }
 
                 } catch (Exception e) {

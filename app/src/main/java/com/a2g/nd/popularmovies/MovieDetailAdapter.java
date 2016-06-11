@@ -1,6 +1,9 @@
 package com.a2g.nd.popularmovies;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +14,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+    private static final String LOG_TAG = MovieDetailAdapter.class.getSimpleName();
 
     private final int VIEW_TYPE_DETAILS = 0;
     private final int VIEW_TYPE_TRAILERS = 1;
@@ -59,17 +63,19 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    class VideoViewHolder extends RecyclerView.ViewHolder{
+    class VideoViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
+
         public final TextView titleView;
         public final ImageView iconView;
         public final TextView textView;
 
         public VideoViewHolder(View itemView) {
             super(itemView);
-
             titleView = (TextView) itemView.findViewById(R.id.tv_section_title_trailer);
             iconView = (ImageView) itemView.findViewById(R.id.iv_detail_icon);
             textView = (TextView) itemView.findViewById(R.id.tv_detail_trailer);
+            itemView.setOnClickListener(this);
         }
 
         public void bind(int position){
@@ -77,6 +83,12 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             textView.setText("Trailer " + position);
             titleView.setText("Trailers:");
             titleView.setVisibility(position == 1 && movieObject.trailers.size() != 0 ? View.VISIBLE : View.GONE);
+        }
+
+        //Onclick event for Trailer items will launch Youtube
+        @Override
+        public void onClick(View v) {
+            launchYoutube(movieObject.trailers.get(getAdapterPosition()-1));
         }
     }
 
@@ -97,6 +109,18 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             textView.setText(movieObject.reviews.get(position-movieObject.trailers.size()-1));
             titleView.setText("Reviews:");
             titleView.setVisibility(position == 1 + movieObject.trailers.size() && movieObject.reviews.size() != 0 ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    //Launches Youtube App using Implicit intent, fallback to browser if app is not installed
+    public void launchYoutube(String id){
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException ex) {
+            Intent intent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://www.youtube.com/watch?v=" + id));
+            context.startActivity(intent);
         }
     }
 
