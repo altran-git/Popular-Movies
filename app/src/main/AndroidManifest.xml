@@ -32,6 +32,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.a2g.nd.popularmovies.MainActivity" />
         </activity>
+
+        <!-- Movie Provider -->
+        <provider
+            android:authorities="com.a2g.nd.popularmovies"
+            android:name=".data.MovieProvider"
+            android:exported="false"
+            android:syncable="true" />
+
     </application>
 
 </manifest>
