@@ -1,11 +1,11 @@
 package com.a2g.nd.popularmovies;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -45,7 +45,7 @@ public class DetailActivityFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
@@ -85,6 +85,7 @@ public class DetailActivityFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = new Intent();
 
         switch (item.getItemId()) {
             case R.id.action_favorite:
@@ -101,6 +102,8 @@ public class DetailActivityFragment extends Fragment {
                 unfave.setVisible(true);
                 Toast.makeText(getActivity(), "Added to Favorites", Toast.LENGTH_SHORT).show();
 
+                intent.putExtra("Favorite", true);
+                getActivity().setResult(Activity.RESULT_OK, intent);
                 return true;
             case R.id.action_unfavorite:
                 // User chose the "Unfavorites" item, delete movie from database
@@ -113,6 +116,8 @@ public class DetailActivityFragment extends Fragment {
                 unfave.setVisible(false);
                 Toast.makeText(getActivity(), "Removed from Favorites", Toast.LENGTH_SHORT).show();
 
+                intent.putExtra("Favorite", false);
+                getActivity().setResult(Activity.RESULT_OK, intent);
                 return true;
             default:
                 // If we got here, the user's action was not recognized.
