@@ -155,17 +155,14 @@ public class MainActivityFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             if(!data.getBooleanExtra("Favorite", false)){
-                if(this.myBundle != null){
-                    int spinnerState = myBundle.getInt("sortspinner", 0);
-                    if(spinnerState == 2) {
-                        Log.d(LOG_TAG, "onActivityResult");
-                        //only refresh adapater and arraylist if Spinner is on Favorites
-                        //clear adapter before resorting
-                        movieAdapter.clear();
-                        getFavoriteMovieData();
-                    }
+                int spinnerState = sort_spinner.getSelectedItemPosition();
+                if(spinnerState == 2) {
+                    Log.d(LOG_TAG, "onActivityResult");
+                    //only refresh adapater and arraylist if Spinner is on Favorites
+                    //clear adapter before resorting
+                    movieAdapter.clear();
+                    getFavoriteMovieData();
                 }
-
             }
         }
     }
