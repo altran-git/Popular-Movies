@@ -38,6 +38,7 @@ public class MainActivityFragment extends Fragment {
     private ArrayList<Movie> movieArrayList;
     Spinner sort_spinner;
     Bundle myBundle;
+    GridView gridView;
     boolean userSelect = false;
 
 
@@ -112,9 +113,6 @@ public class MainActivityFragment extends Fragment {
                                        int position, long id) {
 
                 if(userSelect) {
-                    //clear adapter before resorting
-                    movieAdapter.clear();
-
                     switch (position) {
                         case 0:
                             getMovieData("popular");
@@ -124,7 +122,7 @@ public class MainActivityFragment extends Fragment {
                             break;
                         case 2:
                             getFavoriteMovieData();
-                        default:
+                            break;
                     }
 
                     //reset userSelect
@@ -159,8 +157,6 @@ public class MainActivityFragment extends Fragment {
                 if(spinnerState == 2) {
                     Log.d(LOG_TAG, "onActivityResult");
                     //only refresh adapater and arraylist if Spinner is on Favorites
-                    //clear adapter before resorting
-                    movieAdapter.clear();
                     getFavoriteMovieData();
                 }
             }
@@ -170,6 +166,7 @@ public class MainActivityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         if(movieAdapter == null) {
             movieAdapter = new MovieAdapter(getActivity(), movieArrayList);
         }
@@ -177,7 +174,7 @@ public class MainActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         //Get reference to Gridview and attach adapter to it
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+        gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
         gridView.setAdapter(movieAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -194,8 +191,15 @@ public class MainActivityFragment extends Fragment {
     }
 
     public void getFavoriteMovieData(){
-        Log.d(LOG_TAG, "getFavoriteMovieData");
-        Cursor cursor = getContext().getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI, MOVIE_PROJECTION, null, null, MovieContract.MovieEntry.COLUMN_TITLE + " ASC");
+        //Log.d(LOG_TAG, "getFavoriteMovieData");
+        Cursor cursor = getContext().getContentResolver().query(
+                MovieContract.MovieEntry.CONTENT_URI,
+                MOVIE_PROJECTION,
+                null,
+                null,
+                MovieContract.MovieEntry.COLUMN_TITLE + " ASC");
+
+        movieArrayList.clear();
         while(cursor.moveToNext()){
             //Set movie object parameters
             String imagePath = cursor.getString(INDEX_POSTER);
@@ -208,12 +212,14 @@ public class MainActivityFragment extends Fragment {
             Movie movieObject = new Movie(imagePath, origTitle, overview, voteAvg, releaseDate, movieId);
             movieArrayList.add(movieObject);
         }
-        //movieAdapter.notifyDataSetChanged();
+        movieAdapter.notifyDataSetChanged();
+        gridView.smoothScrollToPosition(0);
         cursor.close();
     }
 
+    //Retrofit Async call to retrieve Movie data
     public void getMovieData(String sortBy){
-        Log.d(LOG_TAG, "JSON getMovieData");
+        //Log.d(LOG_TAG, "JSON getMovieData");
 
         RestInterface service = RestInterface.retrofit.create(RestInterface.class);
 
@@ -244,6 +250,7 @@ public class MainActivityFragment extends Fragment {
 
                         //add data from server
                         if (resultMovies != null) {
+                            movieArrayList.clear();
                             for (Movie movieObject : resultMovies) {
                                 movieArrayList.add(movieObject);
                             }
@@ -253,6 +260,8 @@ public class MainActivityFragment extends Fragment {
 
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    gridView.smoothScrollToPosition(0);
                 }
             }
 

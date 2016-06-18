@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -151,9 +150,9 @@ public class DetailActivityFragment extends Fragment {
         return rootView;
     }
 
-    //Retrofit Asynch call to retrieve Movie Trailers
+    //Retrofit Async call to retrieve Movie Trailers
     public void getVideoData(String movieId){
-        Log.d(LOG_TAG, "JSON getVideoData");
+        //Log.d(LOG_TAG, "JSON getVideoData");
 
         RestInterface service = RestInterface.retrofit.create(RestInterface.class);
 
@@ -188,9 +187,9 @@ public class DetailActivityFragment extends Fragment {
         });
     }
 
-    //Retrofit Asynch call to retrieve Movie Reviews
+    //Retrofit Async call to retrieve Movie Reviews
     public void getReviewData(String movieId){
-        Log.d(LOG_TAG, "JSON getReviewData");
+        //Log.d(LOG_TAG, "JSON getReviewData");
 
         RestInterface service = RestInterface.retrofit.create(RestInterface.class);
 
