@@ -1,8 +1,8 @@
 package com.a2g.nd.popularmovies;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -18,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.Spinner;
 
+import com.a2g.nd.popularmovies.data.MovieContract;
 import com.a2g.nd.popularmovies.models.MovieModel;
 
 import java.util.ArrayList;
@@ -34,7 +36,28 @@ public class MainActivityFragment extends Fragment {
 
     private MovieAdapter movieAdapter;
     private ArrayList<Movie> movieArrayList;
+    Spinner sort_spinner;
+    Bundle myBundle;
+    GridView gridView;
+    boolean userSelect = false;
 
+
+    private static final String[] MOVIE_PROJECTION = new String[] {
+            MovieContract.MovieEntry.COLUMN_POSTER,
+            MovieContract.MovieEntry.COLUMN_TITLE,
+            MovieContract.MovieEntry.COLUMN_SYNOPSIS,
+            MovieContract.MovieEntry.COLUMN_USER_RATING,
+            MovieContract.MovieEntry.COLUMN_REL_DATE,
+            MovieContract.MovieEntry.COLUMN_MOVIE_ID
+    };
+
+    // these indices must match the projection
+    private static final int INDEX_POSTER = 0;
+    private static final int INDEX_TITLE = 1;
+    private static final int INDEX_SYNOPSIS = 2;
+    private static final int INDEX_USER_RATING = 3;
+    private static final int INDEX_REL_DATE = 4;
+    private static final int INDEX_MOVIE_ID = 5;
 
     public MainActivityFragment() {
     }
@@ -48,8 +71,10 @@ public class MainActivityFragment extends Fragment {
 
         if (savedInstanceState==null || !savedInstanceState.containsKey("movielist")) {
             movieArrayList = new ArrayList<Movie>();
+            getMovieData(getString(R.string.sort_by_default));
         }
         else {
+            this.myBundle = savedInstanceState;
             movieArrayList = savedInstanceState.getParcelableArrayList("movielist");
         }
     }
@@ -59,44 +84,50 @@ public class MainActivityFragment extends Fragment {
         // Inflate the fragment menu
         inflater.inflate(R.menu.menu_mainfragment, menu);
 
-
         //Create and initialize the spinner object
         MenuItem item = menu.findItem(R.id.sort_spinner);
-        Spinner sort_spinner = (Spinner) MenuItemCompat.getActionView(item);
+        sort_spinner = (Spinner) MenuItemCompat.getActionView(item);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
                 R.array.sort_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sort_spinner.setAdapter(adapter);
 
-        //Listener for spinner object
+        //Restore spinner state if it was saved
+        if(this.myBundle != null){
+            sort_spinner.setSelection(myBundle.getInt("sortspinner", 0));
+        }
+
+        //Touch Listener for spinner object
+        sort_spinner.setOnTouchListener(new AdapterView.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                userSelect = true;
+                return false;
+            }
+        });
+
+        //Select Listener for spinner object
         sort_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
 
-                //clear adapter before resorting
-                movieAdapter.clear();
+                if(userSelect) {
+                    switch (position) {
+                        case 0:
+                            getMovieData("popular");
+                            break;
+                        case 1:
+                            getMovieData("top_rated");
+                            break;
+                        case 2:
+                            getFavoriteMovieData();
+                            break;
+                    }
 
-                //Depending on which item in the spinner is selected, write the value to
-                //the shared preference key
-                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-
-                switch (position){
-                    case 0:
-                        //Log.d("SPINNER", "Sort By Popular");
-                        editor.putString(getString(R.string.sort_by_key), "popular");
-                        editor.commit();
-                        break;
-                    case 1:
-                        //Log.d("SPINNER", "Sort By Top Rated");
-                        editor.putString(getString(R.string.sort_by_key), "top_rated");
-                        editor.commit();
-                        break;
-                    default:
+                    //reset userSelect
+                    userSelect = false;
                 }
-
-                String sortBy = sharedPref.getString(getString(R.string.sort_by_key), getString(R.string.sort_by_default));
-                getMovieData(sortBy);
             }
 
             @Override
@@ -110,6 +141,26 @@ public class MainActivityFragment extends Fragment {
         super.onSaveInstanceState(outState);
         //Save array list
         outState.putParcelableArrayList("movielist", movieArrayList);
+        //Save Spinner State
+        outState.putInt("sortspinner", sort_spinner.getSelectedItemPosition());
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //Using onActivityResult to pass data from DetailActivityFragment
+        //When a user unfavorites a movie and clicks back into the Favorites list
+        //it will refresh the Adapter and remove the movie from the array list
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            if(!data.getBooleanExtra("Favorite", false)){
+                int spinnerState = sort_spinner.getSelectedItemPosition();
+                if(spinnerState == 2) {
+                    Log.d(LOG_TAG, "onActivityResult");
+                    //only refresh adapater and arraylist if Spinner is on Favorites
+                    getFavoriteMovieData();
+                }
+            }
+        }
     }
 
     @Override
@@ -123,7 +174,7 @@ public class MainActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         //Get reference to Gridview and attach adapter to it
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+        gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
         gridView.setAdapter(movieAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -132,15 +183,43 @@ public class MainActivityFragment extends Fragment {
                 Movie movieObject = movieAdapter.getItem(position);
                 Intent detailActivityIntent = new Intent(getContext(), DetailActivity.class)
                         .putExtra("movie_object", movieObject);
-                startActivity(detailActivityIntent);
+                startActivityForResult(detailActivityIntent, 1);
             }
         });
 
         return rootView;
     }
 
+    public void getFavoriteMovieData(){
+        //Log.d(LOG_TAG, "getFavoriteMovieData");
+        Cursor cursor = getContext().getContentResolver().query(
+                MovieContract.MovieEntry.CONTENT_URI,
+                MOVIE_PROJECTION,
+                null,
+                null,
+                MovieContract.MovieEntry.COLUMN_TITLE + " ASC");
+
+        movieArrayList.clear();
+        while(cursor.moveToNext()){
+            //Set movie object parameters
+            String imagePath = cursor.getString(INDEX_POSTER);
+            String origTitle = cursor.getString(INDEX_TITLE);
+            String overview = cursor.getString(INDEX_SYNOPSIS);
+            String voteAvg = cursor.getString(INDEX_USER_RATING);
+            String releaseDate = cursor.getString(INDEX_REL_DATE);
+            int movieId = cursor.getInt(INDEX_MOVIE_ID);
+
+            Movie movieObject = new Movie(imagePath, origTitle, overview, voteAvg, releaseDate, movieId);
+            movieArrayList.add(movieObject);
+        }
+        movieAdapter.notifyDataSetChanged();
+        gridView.smoothScrollToPosition(0);
+        cursor.close();
+    }
+
+    //Retrofit Async call to retrieve Movie data
     public void getMovieData(String sortBy){
-        Log.d(LOG_TAG, "JSON getMovieData");
+        //Log.d(LOG_TAG, "JSON getMovieData");
 
         RestInterface service = RestInterface.retrofit.create(RestInterface.class);
 
@@ -171,6 +250,7 @@ public class MainActivityFragment extends Fragment {
 
                         //add data from server
                         if (resultMovies != null) {
+                            movieArrayList.clear();
                             for (Movie movieObject : resultMovies) {
                                 movieArrayList.add(movieObject);
                             }
@@ -180,6 +260,8 @@ public class MainActivityFragment extends Fragment {
 
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    gridView.smoothScrollToPosition(0);
                 }
             }
 
