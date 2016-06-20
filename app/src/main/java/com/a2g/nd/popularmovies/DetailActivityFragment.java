@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -45,6 +46,7 @@ public class DetailActivityFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "Detail Fragment onCreate");
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
@@ -52,28 +54,31 @@ public class DetailActivityFragment extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        //Check if the movie selected is in the DB (this means that it is a favorite)
-        Cursor movieCursor = getContext().getContentResolver().query(
-                MovieContract.MovieEntry.CONTENT_URI,
-                new String[]{MovieContract.MovieEntry._ID},
-                MovieContract.MovieEntry.COLUMN_MOVIE_ID + " = ?",
-                new String[]{Integer.toString(movieObject.id)},
-                null);
+        Log.d(LOG_TAG, "Detail Fragment onPerpareOptionsMenu");
 
-        fave = menu.findItem(R.id.action_favorite);
-        unfave = menu.findItem(R.id.action_unfavorite);
-        
-        //If movie exists in the DB then show the Unfavorite button and hide the Favorite button
-        if(movieCursor.moveToFirst()){
-            fave.setVisible(false);
-            unfave.setVisible(true);
-        }
-        else{
-            fave.setVisible(true);
-            unfave.setVisible(false);
-        }
+        if(movieObject != null) {
+            //Check if the movie selected is in the DB (this means that it is a favorite)
+            Cursor movieCursor = getContext().getContentResolver().query(
+                    MovieContract.MovieEntry.CONTENT_URI,
+                    new String[]{MovieContract.MovieEntry._ID},
+                    MovieContract.MovieEntry.COLUMN_MOVIE_ID + " = ?",
+                    new String[]{Integer.toString(movieObject.id)},
+                    null);
 
-        movieCursor.close();
+            fave = menu.findItem(R.id.action_favorite);
+            unfave = menu.findItem(R.id.action_unfavorite);
+
+            //If movie exists in the DB then show the Unfavorite button and hide the Favorite button
+            if (movieCursor.moveToFirst()) {
+                fave.setVisible(false);
+                unfave.setVisible(true);
+            } else {
+                fave.setVisible(true);
+                unfave.setVisible(false);
+            }
+
+            movieCursor.close();
+        }
     }
 
     @Override
@@ -127,15 +132,16 @@ public class DetailActivityFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Intent intent = getActivity().getIntent();
+        Log.d(LOG_TAG, "Detail Fragment onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
         //Setup the recycler view
         recyclerView = (RecyclerView) rootView.findViewById(R.id.movies_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        if (intent != null && intent.hasExtra("movie_object")) {
-            movieObject = intent.getParcelableExtra("movie_object");
+        Bundle arguments = getArguments();
+        if (arguments != null){
+            movieObject = arguments.getParcelable("MovieObject");
 
             //Attach adapter
             movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject);
@@ -148,6 +154,12 @@ public class DetailActivityFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "Detail Fragment onSaveInstanceState");
+        super.onSaveInstanceState(outState);
     }
 
     //Retrofit Async call to retrieve Movie Trailers

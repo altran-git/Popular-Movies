@@ -37,6 +37,7 @@ public class MainActivityFragment extends Fragment {
     private MovieAdapter movieAdapter;
     private ArrayList<Movie> movieArrayList;
     Spinner sort_spinner;
+    ArrayAdapter<CharSequence> spinnerAdapter;
     Bundle myBundle;
     GridView gridView;
     boolean userSelect = false;
@@ -60,9 +61,9 @@ public class MainActivityFragment extends Fragment {
     private static final int INDEX_MOVIE_ID = 5;
 
 
-    public interface Callback{
+    public interface DetailCallback{
         /**
-         * DetailFragmentCallback for when an item has been selected.
+         * Callback for when an item has been selected.
          */
         public void onItemSelected(Movie movie);
     }
@@ -73,6 +74,7 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "Main Fragment onCreate");
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
@@ -89,16 +91,18 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(LOG_TAG, "Main Fragment onCreateOptionsMenu");
         // Inflate the fragment menu
         inflater.inflate(R.menu.menu_mainfragment, menu);
 
         //Create and initialize the spinner object
         MenuItem item = menu.findItem(R.id.sort_spinner);
         sort_spinner = (Spinner) MenuItemCompat.getActionView(item);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
+
+        spinnerAdapter = ArrayAdapter.createFromResource(getActivity(),
                 R.array.sort_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sort_spinner.setAdapter(adapter);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sort_spinner.setAdapter(spinnerAdapter);
 
         //Restore spinner state if it was saved
         if(this.myBundle != null){
@@ -146,6 +150,7 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "Main Fragment onSaveInstanceState");
         super.onSaveInstanceState(outState);
         //Save array list
         outState.putParcelableArrayList("movielist", movieArrayList);
@@ -174,6 +179,7 @@ public class MainActivityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "Main Fragment onCreateView");
 
         if(movieAdapter == null) {
             movieAdapter = new MovieAdapter(getActivity(), movieArrayList);
@@ -190,10 +196,10 @@ public class MainActivityFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Movie movieObject = movieAdapter.getItem(position);
 
-                //((Callback) getActivity())
-                Intent detailActivityIntent = new Intent(getContext(), DetailActivity.class)
-                        .putExtra("movie_object", movieObject);
-                startActivityForResult(detailActivityIntent, 1);
+                ((DetailCallback) getActivity()).onItemSelected(movieObject);
+//                Intent detailActivityIntent = new Intent(getContext(), DetailActivity.class)
+//                        .putExtra("movie_object", movieObject);
+//                startActivityForResult(detailActivityIntent, 1);
             }
         });
 

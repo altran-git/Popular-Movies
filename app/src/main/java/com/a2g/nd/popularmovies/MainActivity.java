@@ -1,5 +1,6 @@
 package com.a2g.nd.popularmovies;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -9,7 +10,7 @@ import com.facebook.stetho.okhttp3.StethoInterceptor;
 
 import okhttp3.OkHttpClient;
 
-public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback {
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.DetailCallback {
     private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     public static boolean mTwoPane;
@@ -58,7 +59,24 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     }
 
     @Override
-    public void onItemSelected(Movie movie){
+    public void onItemSelected(Movie movieObject){
+        if(mTwoPane == true){
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putParcelable("MovieObject", movieObject);
 
+            DetailActivityFragment fragment  = new DetailActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        } else{
+            Intent detailActivityIntent = new Intent(this, DetailActivity.class)
+                        .putExtra("movie_object", movieObject);
+                startActivityForResult(detailActivityIntent, 1);
+        }
     }
 }
