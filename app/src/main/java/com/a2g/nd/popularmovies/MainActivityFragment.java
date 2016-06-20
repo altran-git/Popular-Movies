@@ -59,6 +59,14 @@ public class MainActivityFragment extends Fragment {
     private static final int INDEX_REL_DATE = 4;
     private static final int INDEX_MOVIE_ID = 5;
 
+
+    public interface Callback{
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Movie movie);
+    }
+
     public MainActivityFragment() {
     }
 
@@ -181,6 +189,8 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Movie movieObject = movieAdapter.getItem(position);
+
+                //((Callback) getActivity())
                 Intent detailActivityIntent = new Intent(getContext(), DetailActivity.class)
                         .putExtra("movie_object", movieObject);
                 startActivityForResult(detailActivityIntent, 1);
