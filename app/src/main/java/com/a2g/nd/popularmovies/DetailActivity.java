@@ -38,10 +38,4 @@ public class DetailActivity extends AppCompatActivity {
                     .commit();
         }
     }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.d(LOG_TAG, "Detail onSaveInstanceState");
-        super.onSaveInstanceState(outState);
-    }
 }

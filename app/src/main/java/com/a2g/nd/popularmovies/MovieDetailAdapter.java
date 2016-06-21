@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private static final String LOG_TAG = MovieDetailAdapter.class.getSimpleName();
 
@@ -21,15 +23,17 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private final int VIEW_TYPE_REVIEWS = 2;
 
     private Movie movieObject;
-    //private List<String> trailerList;
-    //private List<String> reviewList;
+    private List<String> trailerList;
+    private List<String> reviewList;
+    private List<String> reviewerList;
     Context context;
 
-    public MovieDetailAdapter(Context context, Movie movieObject) {
+    public MovieDetailAdapter(Context context, Movie movieObject, List<String> trailerList, List<String> reviewList, List<String> reviewerList) {
         this.context = context;
         this.movieObject = movieObject;
-        //this.trailerList = trailerList;
-        //this.reviewList = reviewList;
+        this.trailerList = trailerList;
+        this.reviewList = reviewList;
+        this.reviewerList = reviewerList;
     }
 
     class MovieViewHolder extends RecyclerView.ViewHolder{
@@ -82,13 +86,13 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             iconView.setImageResource(R.drawable.ic_play_circle);
             textView.setText("Trailer " + position);
             titleView.setText("Trailers:");
-            titleView.setVisibility(position == 1 && movieObject.trailers.size() != 0 ? View.VISIBLE : View.GONE);
+            titleView.setVisibility(position == 1 && trailerList.size() != 0 ? View.VISIBLE : View.GONE);
         }
 
         //Onclick event for Trailer items will launch Youtube
         @Override
         public void onClick(View v) {
-            launchYoutube(movieObject.trailers.get(getAdapterPosition()-1));
+            launchYoutube(trailerList.get(getAdapterPosition()-1));
         }
     }
 
@@ -105,10 +109,10 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         public void bind(int position) {
-            reviewerView.setText(movieObject.reviewers.get(position-movieObject.trailers.size()-1));
-            textView.setText(movieObject.reviews.get(position-movieObject.trailers.size()-1));
+            reviewerView.setText(reviewerList.get(position-trailerList.size()-1));
+            textView.setText(reviewList.get(position-trailerList.size()-1));
             titleView.setText("Reviews:");
-            titleView.setVisibility(position == 1 + movieObject.trailers.size() && movieObject.reviews.size() != 0 ? View.VISIBLE : View.GONE);
+            titleView.setVisibility(position == 1 + trailerList.size() && reviewList.size() != 0 ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -129,7 +133,7 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if(position == 0){
             return VIEW_TYPE_DETAILS;
         }
-        else if(position != 0 && position <= movieObject.trailers.size()) {
+        else if(position != 0 && position <= trailerList.size()) {
             return VIEW_TYPE_TRAILERS;
         }
         else {
@@ -177,6 +181,6 @@ public class MovieDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemCount() {
-        return (1 + movieObject.trailers.size() + movieObject.reviews.size());
+        return (1 + trailerList.size() + reviewList.size());
     }
 }

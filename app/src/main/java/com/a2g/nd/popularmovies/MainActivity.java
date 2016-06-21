@@ -11,7 +11,7 @@ import com.facebook.stetho.okhttp3.StethoInterceptor;
 import okhttp3.OkHttpClient;
 
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.DetailCallback {
-    private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     public static boolean mTwoPane;
 
@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
 
         if (findViewById(R.id.movie_detail_container) != null) {
             // The detail container view will be present only in the large-screen layouts
@@ -60,10 +62,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
     @Override
     public void onItemSelected(Movie movieObject){
+        Log.d(LOG_TAG, "Main onItemSelected");
         if(mTwoPane == true){
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
+            Log.d(LOG_TAG, "onItemSelected TRUE");
             Bundle args = new Bundle();
             args.putParcelable("MovieObject", movieObject);
 

@@ -23,6 +23,9 @@ import com.a2g.nd.popularmovies.models.ReviewModel;
 import com.a2g.nd.popularmovies.models.SimpleDividerItemDecoration;
 import com.a2g.nd.popularmovies.models.VideoModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,6 +40,9 @@ public class DetailActivityFragment extends Fragment {
     private Movie movieObject;
     private RecyclerView recyclerView;
     private MovieDetailAdapter movieDetailAdapter;
+    private List<String> trailerList = new ArrayList<>();
+    private List<String> reviewList = new ArrayList<>();
+    private List<String> reviewerList = new ArrayList<>();
 
     MenuItem fave;
     MenuItem unfave;
@@ -131,6 +137,12 @@ public class DetailActivityFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "Detail Fragment onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(LOG_TAG, "Detail Fragment onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
@@ -144,7 +156,7 @@ public class DetailActivityFragment extends Fragment {
             movieObject = arguments.getParcelable("MovieObject");
 
             //Attach adapter
-            movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject);
+            movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject, trailerList, reviewList, reviewerList);
             recyclerView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
             recyclerView.setAdapter(movieDetailAdapter);
 
@@ -154,12 +166,6 @@ public class DetailActivityFragment extends Fragment {
         }
 
         return rootView;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        Log.d(LOG_TAG, "Detail Fragment onSaveInstanceState");
-        super.onSaveInstanceState(outState);
     }
 
     //Retrofit Async call to retrieve Movie Trailers
@@ -179,7 +185,7 @@ public class DetailActivityFragment extends Fragment {
                         int trailerCount = response.body().getVideoResults().size();
 
                         for (int i = 0; i < trailerCount; i++) {
-                            movieObject.trailers.add(i, response.body().getVideoResults().get(i).getKey());
+                            trailerList.add(i, response.body().getVideoResults().get(i).getKey());
                         }
 
                         if (trailerCount != 0) {
@@ -216,8 +222,8 @@ public class DetailActivityFragment extends Fragment {
                         int reviewCount = response.body().getReviewResults().size();
 
                         for (int i = 0; i < reviewCount; i++) {
-                            movieObject.reviews.add(i, response.body().getReviewResults().get(i).getContent());
-                            movieObject.reviewers.add(i, response.body().getReviewResults().get(i).getAuthor());
+                            reviewList.add(i, response.body().getReviewResults().get(i).getContent());
+                            reviewerList.add(i, response.body().getReviewResults().get(i).getAuthor());
                         }
 
                         if (reviewCount != 0) {

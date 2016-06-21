@@ -32,12 +32,13 @@ import retrofit2.Response;
  * A fragment containing a grid view for movies
  */
 public class MainActivityFragment extends Fragment {
-    private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
+    private static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
 
     private MovieAdapter movieAdapter;
     private ArrayList<Movie> movieArrayList;
     Spinner sort_spinner;
     ArrayAdapter<CharSequence> spinnerAdapter;
+    private int mSpinnerPosition ;
     Bundle myBundle;
     GridView gridView;
     boolean userSelect = false;
@@ -103,6 +104,7 @@ public class MainActivityFragment extends Fragment {
                 R.array.sort_array, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sort_spinner.setAdapter(spinnerAdapter);
+        sort_spinner.setSelection(mSpinnerPosition);
 
         //Restore spinner state if it was saved
         if(this.myBundle != null){
@@ -139,6 +141,9 @@ public class MainActivityFragment extends Fragment {
 
                     //reset userSelect
                     userSelect = false;
+
+                    //save spinner position
+                    mSpinnerPosition = position;
                 }
             }
 
@@ -197,9 +202,6 @@ public class MainActivityFragment extends Fragment {
                 Movie movieObject = movieAdapter.getItem(position);
 
                 ((DetailCallback) getActivity()).onItemSelected(movieObject);
-//                Intent detailActivityIntent = new Intent(getContext(), DetailActivity.class)
-//                        .putExtra("movie_object", movieObject);
-//                startActivityForResult(detailActivityIntent, 1);
             }
         });
 
