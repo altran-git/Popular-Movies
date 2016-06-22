@@ -1,7 +1,6 @@
 package com.a2g.nd.popularmovies;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -34,13 +33,14 @@ import retrofit2.Response;
 public class MainActivityFragment extends Fragment {
     private static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
 
-    private MovieAdapter movieAdapter;
-    private ArrayList<Movie> movieArrayList;
+    private static MovieAdapter movieAdapter;
+    private static ArrayList<Movie> movieArrayList;
+    private static GridView gridView;
     Spinner sort_spinner;
     ArrayAdapter<CharSequence> spinnerAdapter;
-    private int mSpinnerPosition ;
+    public static int mSpinnerPosition ;
     Bundle myBundle;
-    GridView gridView;
+
     boolean userSelect = false;
 
 
@@ -135,7 +135,7 @@ public class MainActivityFragment extends Fragment {
                             getMovieData("top_rated");
                             break;
                         case 2:
-                            getFavoriteMovieData();
+                            getFavoriteMovieData(getActivity());
                             break;
                     }
 
@@ -161,24 +161,6 @@ public class MainActivityFragment extends Fragment {
         outState.putParcelableArrayList("movielist", movieArrayList);
         //Save Spinner State
         outState.putInt("sortspinner", sort_spinner.getSelectedItemPosition());
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //Using onActivityResult to pass data from DetailActivityFragment
-        //When a user unfavorites a movie and clicks back into the Favorites list
-        //it will refresh the Adapter and remove the movie from the array list
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            if(!data.getBooleanExtra("Favorite", false)){
-                int spinnerState = sort_spinner.getSelectedItemPosition();
-                if(spinnerState == 2) {
-                    Log.d(LOG_TAG, "onActivityResult");
-                    //only refresh adapater and arraylist if Spinner is on Favorites
-                    getFavoriteMovieData();
-                }
-            }
-        }
     }
 
     @Override
@@ -208,9 +190,9 @@ public class MainActivityFragment extends Fragment {
         return rootView;
     }
 
-    public void getFavoriteMovieData(){
+    public static void getFavoriteMovieData(Context context){
         //Log.d(LOG_TAG, "getFavoriteMovieData");
-        Cursor cursor = getContext().getContentResolver().query(
+        Cursor cursor = context.getContentResolver().query(
                 MovieContract.MovieEntry.CONTENT_URI,
                 MOVIE_PROJECTION,
                 null,

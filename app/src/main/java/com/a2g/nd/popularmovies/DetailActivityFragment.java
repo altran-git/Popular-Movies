@@ -36,6 +36,7 @@ import retrofit2.Response;
 public class DetailActivityFragment extends Fragment {
 
     private static final String LOG_TAG = DetailActivityFragment.class.getSimpleName();
+    private static final String MOVIEOBJ_ARG = "MVOBJARG";
 
     private Movie movieObject;
     private RecyclerView recyclerView;
@@ -62,6 +63,9 @@ public class DetailActivityFragment extends Fragment {
     public void onPrepareOptionsMenu(Menu menu) {
         Log.d(LOG_TAG, "Detail Fragment onPerpareOptionsMenu");
 
+        fave = menu.findItem(R.id.action_favorite);
+        unfave = menu.findItem(R.id.action_unfavorite);
+
         if(movieObject != null) {
             //Check if the movie selected is in the DB (this means that it is a favorite)
             Cursor movieCursor = getContext().getContentResolver().query(
@@ -70,9 +74,6 @@ public class DetailActivityFragment extends Fragment {
                     MovieContract.MovieEntry.COLUMN_MOVIE_ID + " = ?",
                     new String[]{Integer.toString(movieObject.id)},
                     null);
-
-            fave = menu.findItem(R.id.action_favorite);
-            unfave = menu.findItem(R.id.action_unfavorite);
 
             //If movie exists in the DB then show the Unfavorite button and hide the Favorite button
             if (movieCursor.moveToFirst()) {
@@ -84,6 +85,9 @@ public class DetailActivityFragment extends Fragment {
             }
 
             movieCursor.close();
+        } else {
+            fave.setVisible(false);
+            unfave.setVisible(false);
         }
     }
 
@@ -153,7 +157,7 @@ public class DetailActivityFragment extends Fragment {
 
         Bundle arguments = getArguments();
         if (arguments != null){
-            movieObject = arguments.getParcelable("MovieObject");
+            movieObject = arguments.getParcelable(MOVIEOBJ_ARG);
 
             //Attach adapter
             movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject, trailerList, reviewList, reviewerList);
