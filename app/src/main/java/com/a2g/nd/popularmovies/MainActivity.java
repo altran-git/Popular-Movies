@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private static final String MOVIEOBJ_ARG = "MVOBJARG";
     private static final String MOVIEOBJ_PARCEL = "MVOBJPARCEL";
+    private static Movie movieObject;
     public static boolean mTwoPane;
 
     static OkHttpClient client;
@@ -49,11 +50,18 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                         .commit();
             }
             else {
+                movieObject = savedInstanceState.getParcelable(MOVIEOBJ_PARCEL);
                 //Only replace fragment if it doesn't already exist
                 DetailActivityFragment df = (DetailActivityFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
                 if (df == null){
+                    Bundle args = new Bundle();
+                    args.putParcelable(MOVIEOBJ_ARG, movieObject);
+
+                    df = new DetailActivityFragment();
+                    df.setArguments(args);
+
                     getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.movie_detail_container, new DetailActivityFragment(), DETAILFRAGMENT_TAG)
+                            .replace(R.id.movie_detail_container, df, DETAILFRAGMENT_TAG)
                             .commit();
                 }
             }
@@ -77,6 +85,13 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "Main onSaveInstanceState");
+        outState.putParcelable(MOVIEOBJ_PARCEL, movieObject);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         //Using onActivityResult to pass data from DetailActivityFragment
         //When a user unfavorites a movie and clicks back into the Favorites list
@@ -96,6 +111,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     //onItemSelected is used as a Callback (interface DetailCallback) for MainActivityFragment
     @Override
     public void onItemSelected(Movie movieObject){
+
+        this.movieObject = movieObject;
+
         if(mTwoPane == true){
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a

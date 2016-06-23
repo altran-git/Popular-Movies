@@ -176,7 +176,7 @@ public class MainActivityFragment extends Fragment {
 
         //Get reference to Gridview and attach adapter to it
         gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-        gridView.setAdapter(movieAdapter);
+        gridView.setAdapter(movieAdapter);gridView.setEmptyView(rootView.findViewById(R.id.grid_empty));
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

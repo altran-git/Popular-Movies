@@ -17,4 +17,11 @@
         android:horizontalSpacing="@dimen/main_grid_horzSpacing"
         android:numColumns="2"
         tools:context=".MainActivityFragment" />
+
+    <TextView
+        android:id="@+id/grid_empty"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Empty" />
 </FrameLayout>

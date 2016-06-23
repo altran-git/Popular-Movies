@@ -6,7 +6,13 @@ import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public class MovieContract {
+public final class MovieContract {
+
+    // Suppress default constructor for noninstantiability
+    private MovieContract(){
+        throw new AssertionError();
+    }
+
     // The "Content authority" is a name for the entire content provider, it is a unique name
     public static final String CONTENT_AUTHORITY = "com.a2g.nd.popularmovies";
 

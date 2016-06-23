@@ -9,5 +9,5 @@
     <string name="sort_top_rated">Top Rated</string>
     <string name="sort_favorites">Favorites</string>
 
-    <string name="sort_by_default">popular</string>
+    <string name="sort_by_default" translatable="false">popular</string>
 </resources>

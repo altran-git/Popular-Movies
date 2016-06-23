@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,7 +38,7 @@ public class DetailActivityFragment extends Fragment {
     private static final String MOVIEOBJ_ARG = "MVOBJARG";
 
     private Movie movieObject;
-    private RecyclerView recyclerView;
+    private RecyclerViewEmptySupport recyclerView;
     private MovieDetailAdapter movieDetailAdapter;
     private List<String> trailerList = new ArrayList<>();
     private List<String> reviewList = new ArrayList<>();
@@ -152,23 +151,25 @@ public class DetailActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
         //Setup the recycler view
-        recyclerView = (RecyclerView) rootView.findViewById(R.id.movies_recyclerview);
+        recyclerView = (RecyclerViewEmptySupport) rootView.findViewById(R.id.movies_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setEmptyView(container.findViewById(R.id.recycler_empty));
 
         Bundle arguments = getArguments();
         if (arguments != null){
             movieObject = arguments.getParcelable(MOVIEOBJ_ARG);
 
-            //Attach adapter
-            movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject, trailerList, reviewList, reviewerList);
-            recyclerView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
-            recyclerView.setAdapter(movieDetailAdapter);
+            if(movieObject != null) {
+                //Attach adapter
+                movieDetailAdapter = new MovieDetailAdapter(getActivity(), movieObject, trailerList, reviewList, reviewerList);
+                recyclerView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
+                recyclerView.setAdapter(movieDetailAdapter);
 
-            //Get Trailer and Reviews
-            getVideoData(Integer.toString(movieObject.id));
-            getReviewData(Integer.toString(movieObject.id));
+                //Get Trailer and Reviews
+                getVideoData(Integer.toString(movieObject.id));
+                getReviewData(Integer.toString(movieObject.id));
+            }
         }
-
         return rootView;
     }
 
